@@ -12,7 +12,7 @@
             <v-list-item prepend-icon="mdi-home-city" title="主页" to="/"></v-list-item>
             <v-list-item prepend-icon="mdi-image-multiple" title="相册" to="/photos"></v-list-item>
             <v-list-item prepend-icon="mdi-television" title="深度学习项目" to="/ai"></v-list-item>
-            <v-list-item prepend-icon="mdi-television" title="座位查询" to="/seat"></v-list-item>
+            <v-list-item prepend-icon="mdi-television" title="座位查询" href="https://next.202718.xyz"></v-list-item>
         </v-list>
         <v-list-item bottom>
             <v-switch label="深色主题" v-model="theme.global.name.value" inset true-value="dark" false-value="light"

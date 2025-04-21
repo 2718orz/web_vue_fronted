@@ -17,8 +17,8 @@
         <div v-if="prediction !== null" class="result">
           识别结果: <strong>{{ prediction }}</strong>
         </div>
-        <div v-if="potencial !== null" class="result">
-          置信度：{{ potencial }}
+        <div v-if="probabilities !== null" class="result">
+          置信度：{{ probabilities }}
         </div>
         <div v-if="error" class="error">{{ error }}</div>
       </v-container>
@@ -41,7 +41,7 @@ const isDrawing = ref(false);
 const prediction = ref<number | null>(null);
 const error = ref<string | null>(null);
 const isRecognizing = ref(false);
-const potencial = ref(null);
+const probabilities = ref(null);
 // 绘图上下文
 let ctx: CanvasRenderingContext2D;
 
@@ -128,7 +128,7 @@ const clearCanvas = () => {
   if (!canvas.value) return;
 
   ctx.clearRect(0, 0, canvas.value.width, canvas.value.height);
-  potencial.value = null;
+  probabilities.value = null;
   prediction.value = null;
   error.value = null;
 };
@@ -139,12 +139,13 @@ const recognize = async () => {
 
   isRecognizing.value = true;
   error.value = null;
-
+  const backendUrl = 'https://api.202718.xyz';
+  // const backendUrl = 'http://localhost:8000';
   try {
     // 获取 Base64 图像
     const imageBase64 = canvas.value.toDataURL('image/png');
     //console.log(imageBase64)
-    const response = await fetch('https://api.202718.xyz/api/predict', {
+    const response = await fetch(`${backendUrl}/api/predict`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ image: imageBase64 }),
@@ -156,7 +157,7 @@ const recognize = async () => {
 
     const result = await response.json();
     prediction.value = result.prediction;
-    potencial.value = result.probabilities;
+    probabilities.value = result.probabilities;
   } catch (err) {
     console.error('识别失败:', err);
     error.value = '识别失败，请重试或检查网络连接';

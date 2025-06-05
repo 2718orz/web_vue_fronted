@@ -50,7 +50,7 @@ onMounted(() => {
   if (!canvas.value) return;
 
   ctx = canvas.value.getContext('2d')!;
-  ctx.lineWidth = 10;
+  ctx.lineWidth = 25;
   ctx.lineCap = 'round';
   ctx.strokeStyle = 'black';
 
@@ -139,7 +139,7 @@ const recognize = async () => {
 
   isRecognizing.value = true;
   error.value = null;
-  const backendUrl = 'https://api.202718.xyz';
+  const backendUrl = 'https://py.202718.xyz';
   // const backendUrl = 'http://localhost:8000';
   try {
     // 获取 Base64 图像

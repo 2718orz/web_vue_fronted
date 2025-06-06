@@ -1,29 +1,43 @@
 <template>
-  <v-layout class="rounded rounded-md border">
-    <naga></naga>
-    <v-main class="d-flex align-center justify-center">
-      <v-container class="d-flex align-center justify-center flex-column">
-        <h1>手写数字识别</h1>
-        <canvas ref="canvas" width="280" height="280"
-          style="border: 1px solid black; image-rendering: pixelated; touch-action: none;background-color: white;"
-          @mousedown="startDrawing" @mousemove="draw" @mouseup="stopDrawing" @touchstart="handleTouchStart"
-          @touchmove="handleTouchMove" @touchend="stopDrawing"></canvas>
-        <br>
-        <div>
+  <naga></naga>
+  <div class="canvas-wrapper">
+    <h1>手写数字识别</h1>
+
+    <!-- 主体内容：左侧画布区域 + 右侧置信度侧栏 -->
+    <div class="main-content">
+      <!-- 左侧：画布、按钮、识别结果 -->
+      <div class="drawing-area">
+        <canvas ref="canvas" width="280" height="280" style="touch-action: none; image-rendering: pixelated;"
+          @mousedown="startDrawing" @mousemove="draw" @mouseup="stopDrawing" @mouseleave="stopDrawing"
+          @touchstart="handleTouchStart" @touchmove="handleTouchMove" @touchend="stopDrawing"></canvas>
+
+        <div class="button-group">
           <v-btn color="success" @click="clearCanvas">清空画布</v-btn>
-          <v-btn color="success" :disabled="isRecognizing" @click="recognize">{{ isRecognizing ? '识别中...' : '识别数字'
-          }}</v-btn>
+          <v-btn color="success" :disabled="isRecognizing" @click="recognize">
+            {{ isRecognizing ? '识别中...' : '识别数字' }}
+          </v-btn>
         </div>
+
         <div v-if="prediction !== null" class="result">
-          识别结果: <strong>{{ prediction }}</strong>
+          识别结果：<strong>{{ prediction }}</strong>
         </div>
-        <div v-if="probabilities !== null" class="result">
-          置信度：{{ probabilities }}
-        </div>
-        <div v-if="error" class="error">{{ error }}</div>
-      </v-container>
-    </v-main>
-  </v-layout>
+      </div>
+
+      <!-- 右侧：置信度侧栏 -->
+      <aside class="sidebar" v-if="probabilities !== null">
+        <h2>置信度</h2>
+        <table>
+          <tr v-for="(prob, index) in probabilities" :key="index">
+            <td>{{ index }}</td>
+            <td>{{ (prob * 100).toFixed(2) }}%</td>
+          </tr>
+        </table>
+      </aside>
+    </div>
+
+    <!-- 全局错误提示 -->
+    <div v-if="error" class="error">{{ error }}</div>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -48,12 +62,13 @@ let ctx: CanvasRenderingContext2D;
 // 初始化画布
 onMounted(() => {
   if (!canvas.value) return;
-
+  probabilities.value = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
   ctx = canvas.value.getContext('2d')!;
   ctx.lineWidth = 25;
   ctx.lineCap = 'round';
   ctx.strokeStyle = 'black';
-
+  ctx.fillStyle = 'white';
+  ctx.fillRect(0, 0, canvas.value.width, canvas.value.height);
   // 阻止移动端默认行为
   const preventScroll = (e: Event) => {
     if (isDrawing.value) e.preventDefault();
@@ -128,7 +143,9 @@ const clearCanvas = () => {
   if (!canvas.value) return;
 
   ctx.clearRect(0, 0, canvas.value.width, canvas.value.height);
-  probabilities.value = null;
+  ctx.fillStyle = 'white';
+  ctx.fillRect(0, 0, canvas.value.width, canvas.value.height);
+  probabilities.value = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
   prediction.value = null;
   error.value = null;
 };
@@ -167,3 +184,87 @@ const recognize = async () => {
   }
 };
 </script>
+<style scoped>
+/* 容器整体 */
+.canvas-wrapper {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 16px;
+  border-radius: 8px;
+}
+
+/* 标题 */
+h1 {
+  margin-bottom: 24px;
+  font-size: 26px;
+  text-align: center;
+}
+
+/* 主体内容：左右布局 */
+.main-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 24px;
+}
+
+/* 左侧画布区域撑满剩余空间 */
+.drawing-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* 画布样式 */
+.drawing-area canvas {
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+/* 按钮组 */
+.button-group {
+  margin-top: 12px;
+}
+
+.button-group .v-btn {
+  margin-right: 8px;
+}
+
+/* 识别结果 */
+.result {
+  margin-top: 16px;
+  font-size: 18px;
+}
+
+/* 侧栏：固定宽度，背景和内边距 */
+.sidebar {
+  width: 180px;
+  padding: 12px;
+  border-radius: 6px;
+}
+
+.sidebar h2 {
+  margin-top: 0;
+  margin-bottom: 12px;
+  font-size: 18px;
+}
+
+.sidebar table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.sidebar td {
+  padding: 4px 0;
+  border-bottom: 1px solid;
+  font-size: 14px;
+}
+
+/* 错误提示 */
+.error {
+  margin-top: 20px;
+  color: #e74c3c;
+  font-weight: 500;
+  text-align: center;
+}
+</style>

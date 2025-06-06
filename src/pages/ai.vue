@@ -139,12 +139,13 @@ const recognize = async () => {
 
   isRecognizing.value = true;
   error.value = null;
-  const backendUrl = 'https://py.202718.xyz';
+  // const backendUrl = 'https://py.202718.xyz';
+  const backendUrl = 'https://api.202718.xyz';
   // const backendUrl = 'http://localhost:8000';
   try {
     // 获取 Base64 图像
     const imageBase64 = canvas.value.toDataURL('image/png');
-    //console.log(imageBase64)
+    // console.log(imageBase64)
     const response = await fetch(`${backendUrl}/api/predict`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
